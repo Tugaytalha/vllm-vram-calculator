@@ -1,0 +1,478 @@
+{
+  "models": [
+    {
+      "id": "llama-3.2-1b",
+      "name": "Llama 3.2 1B",
+      "provider": "Meta",
+      "parameters": 1e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 16,
+        "hidden_size": 2048,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 64,
+        "intermediate_size": 8192,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "llama-3.2-3b",
+      "name": "Llama 3.2 3B",
+      "provider": "Meta",
+      "parameters": 3e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 28,
+        "hidden_size": 3072,
+        "num_heads": 24,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 8192,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "llama-3.1-8b",
+      "name": "Llama 3.1 8B",
+      "provider": "Meta",
+      "parameters": 8e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 32,
+        "hidden_size": 4096,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 14336,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "llama-3.3-70b",
+      "name": "Llama 3.3 70B",
+      "provider": "Meta",
+      "parameters": 70e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 80,
+        "hidden_size": 8192,
+        "num_heads": 64,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 28672,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "mistral-7b",
+      "name": "Mistral 7B",
+      "provider": "Mistral AI",
+      "parameters": 7.3e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 32,
+        "hidden_size": 4096,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 14336,
+        "vocab_size": 32000,
+        "max_position_embeddings": 32768,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "mixtral-8x7b",
+      "name": "Mixtral 8x7B",
+      "provider": "Mistral AI",
+      "parameters": 46.7e9,
+      "active_parameters": 12.9e9,
+      "architecture": {
+        "type": "moe",
+        "num_layers": 32,
+        "hidden_size": 4096,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 14336,
+        "vocab_size": 32000,
+        "max_position_embeddings": 32768,
+        "attention_type": "gqa",
+        "num_experts": 8,
+        "num_experts_per_token": 2
+      }
+    },
+    {
+      "id": "qwen2.5-0.5b",
+      "name": "Qwen 2.5 0.5B",
+      "provider": "Alibaba",
+      "parameters": 0.5e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 24,
+        "hidden_size": 896,
+        "num_heads": 14,
+        "num_kv_heads": 2,
+        "head_dim": 64,
+        "intermediate_size": 4864,
+        "vocab_size": 151936,
+        "max_position_embeddings": 32768,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-1.5b",
+      "name": "Qwen 2.5 1.5B",
+      "provider": "Alibaba",
+      "parameters": 1.5e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 28,
+        "hidden_size": 1536,
+        "num_heads": 12,
+        "num_kv_heads": 2,
+        "head_dim": 128,
+        "intermediate_size": 8960,
+        "vocab_size": 151936,
+        "max_position_embeddings": 32768,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-3b",
+      "name": "Qwen 2.5 3B",
+      "provider": "Alibaba",
+      "parameters": 3e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 36,
+        "hidden_size": 2048,
+        "num_heads": 16,
+        "num_kv_heads": 2,
+        "head_dim": 128,
+        "intermediate_size": 11008,
+        "vocab_size": 151936,
+        "max_position_embeddings": 32768,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-7b",
+      "name": "Qwen 2.5 7B",
+      "provider": "Alibaba",
+      "parameters": 7.6e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 28,
+        "hidden_size": 3584,
+        "num_heads": 28,
+        "num_kv_heads": 4,
+        "head_dim": 128,
+        "intermediate_size": 18944,
+        "vocab_size": 152064,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-14b",
+      "name": "Qwen 2.5 14B",
+      "provider": "Alibaba",
+      "parameters": 14.7e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 48,
+        "hidden_size": 5120,
+        "num_heads": 40,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 13824,
+        "vocab_size": 152064,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-32b",
+      "name": "Qwen 2.5 32B",
+      "provider": "Alibaba",
+      "parameters": 32e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 64,
+        "hidden_size": 5120,
+        "num_heads": 40,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 27648,
+        "vocab_size": 152064,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "qwen2.5-72b",
+      "name": "Qwen 2.5 72B",
+      "provider": "Alibaba",
+      "parameters": 72e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 80,
+        "hidden_size": 8192,
+        "num_heads": 64,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 29568,
+        "vocab_size": 152064,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-1.5b",
+      "name": "DeepSeek-R1 1.5B",
+      "provider": "DeepSeek",
+      "parameters": 1.5e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 28,
+        "hidden_size": 1536,
+        "num_heads": 12,
+        "num_kv_heads": 2,
+        "head_dim": 128,
+        "intermediate_size": 8960,
+        "vocab_size": 151936,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-7b",
+      "name": "DeepSeek-R1 7B",
+      "provider": "DeepSeek",
+      "parameters": 7e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 28,
+        "hidden_size": 3584,
+        "num_heads": 28,
+        "num_kv_heads": 4,
+        "head_dim": 128,
+        "intermediate_size": 18944,
+        "vocab_size": 151936,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-8b",
+      "name": "DeepSeek-R1 8B",
+      "provider": "DeepSeek",
+      "parameters": 8e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 32,
+        "hidden_size": 4096,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 14336,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-14b",
+      "name": "DeepSeek-R1 14B",
+      "provider": "DeepSeek",
+      "parameters": 14e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 48,
+        "hidden_size": 5120,
+        "num_heads": 40,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 13824,
+        "vocab_size": 151936,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-32b",
+      "name": "DeepSeek-R1 32B",
+      "provider": "DeepSeek",
+      "parameters": 32e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 64,
+        "hidden_size": 5120,
+        "num_heads": 40,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 27648,
+        "vocab_size": 151936,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-70b",
+      "name": "DeepSeek-R1 70B",
+      "provider": "DeepSeek",
+      "parameters": 70e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 80,
+        "hidden_size": 8192,
+        "num_heads": 64,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 28672,
+        "vocab_size": 128256,
+        "max_position_embeddings": 131072,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "deepseek-r1-671b",
+      "name": "DeepSeek-R1 671B",
+      "provider": "DeepSeek",
+      "parameters": 671e9,
+      "active_parameters": 37e9,
+      "architecture": {
+        "type": "moe",
+        "num_layers": 61,
+        "hidden_size": 7168,
+        "num_heads": 128,
+        "num_kv_heads": 128,
+        "head_dim": 128,
+        "intermediate_size": 18432,
+        "vocab_size": 129280,
+        "max_position_embeddings": 128000,
+        "attention_type": "mla",
+        "num_experts": 256,
+        "num_experts_per_token": 8
+      }
+    },
+    {
+      "id": "gemma-2-2b",
+      "name": "Gemma 2 2B",
+      "provider": "Google",
+      "parameters": 2e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 26,
+        "hidden_size": 2304,
+        "num_heads": 8,
+        "num_kv_heads": 4,
+        "head_dim": 256,
+        "intermediate_size": 9216,
+        "vocab_size": 256128,
+        "max_position_embeddings": 8192,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "gemma-2-9b",
+      "name": "Gemma 2 9B",
+      "provider": "Google",
+      "parameters": 9e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 42,
+        "hidden_size": 3584,
+        "num_heads": 16,
+        "num_kv_heads": 8,
+        "head_dim": 256,
+        "intermediate_size": 14336,
+        "vocab_size": 256128,
+        "max_position_embeddings": 8192,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "gemma-2-27b",
+      "name": "Gemma 2 27B",
+      "provider": "Google",
+      "parameters": 27e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 46,
+        "hidden_size": 4608,
+        "num_heads": 32,
+        "num_kv_heads": 16,
+        "head_dim": 128,
+        "intermediate_size": 36864,
+        "vocab_size": 256128,
+        "max_position_embeddings": 8192,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "phi-3-mini-4k",
+      "name": "Phi-3 Mini 4K",
+      "provider": "Microsoft",
+      "parameters": 3.8e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 32,
+        "hidden_size": 3072,
+        "num_heads": 32,
+        "num_kv_heads": 32,
+        "head_dim": 96,
+        "intermediate_size": 8192,
+        "vocab_size": 32064,
+        "max_position_embeddings": 4096,
+        "attention_type": "mha"
+      }
+    },
+    {
+      "id": "phi-3-small-8k",
+      "name": "Phi-3 Small 8K",
+      "provider": "Microsoft",
+      "parameters": 7e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 32,
+        "hidden_size": 4096,
+        "num_heads": 32,
+        "num_kv_heads": 8,
+        "head_dim": 128,
+        "intermediate_size": 14336,
+        "vocab_size": 100352,
+        "max_position_embeddings": 8192,
+        "attention_type": "gqa"
+      }
+    },
+    {
+      "id": "phi-3-medium-4k",
+      "name": "Phi-3 Medium 4K",
+      "provider": "Microsoft",
+      "parameters": 14e9,
+      "architecture": {
+        "type": "dense",
+        "num_layers": 40,
+        "hidden_size": 5120,
+        "num_heads": 40,
+        "num_kv_heads": 10,
+        "head_dim": 128,
+        "intermediate_size": 17920,
+        "vocab_size": 32064,
+        "max_position_embeddings": 4096,
+        "attention_type": "gqa"
+      }
+    }
+  ]
+}

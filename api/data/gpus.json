@@ -1,0 +1,292 @@
+{
+    "gpus": [
+        {
+            "id": "rtx-3060-12gb",
+            "name": "NVIDIA RTX 3060",
+            "vendor": "NVIDIA",
+            "vram_gb": 12,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 360,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-3070-8gb",
+            "name": "NVIDIA RTX 3070",
+            "vendor": "NVIDIA",
+            "vram_gb": 8,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 448,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-3080-10gb",
+            "name": "NVIDIA RTX 3080 (10GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 10,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 760,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-3080-12gb",
+            "name": "NVIDIA RTX 3080 (12GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 12,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 912,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-3090-24gb",
+            "name": "NVIDIA RTX 3090",
+            "vendor": "NVIDIA",
+            "vram_gb": 24,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 936,
+            "tier": "prosumer"
+        },
+        {
+            "id": "rtx-4060-8gb",
+            "name": "NVIDIA RTX 4060",
+            "vendor": "NVIDIA",
+            "vram_gb": 8,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 272,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4060ti-8gb",
+            "name": "NVIDIA RTX 4060 Ti (8GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 8,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 288,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4060ti-16gb",
+            "name": "NVIDIA RTX 4060 Ti (16GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 16,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 288,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4070-12gb",
+            "name": "NVIDIA RTX 4070",
+            "vendor": "NVIDIA",
+            "vram_gb": 12,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 504,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4070ti-12gb",
+            "name": "NVIDIA RTX 4070 Ti",
+            "vendor": "NVIDIA",
+            "vram_gb": 12,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 504,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4070ti-super-16gb",
+            "name": "NVIDIA RTX 4070 Ti Super",
+            "vendor": "NVIDIA",
+            "vram_gb": 16,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 672,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4080-16gb",
+            "name": "NVIDIA RTX 4080",
+            "vendor": "NVIDIA",
+            "vram_gb": 16,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 717,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4080-super-16gb",
+            "name": "NVIDIA RTX 4080 Super",
+            "vendor": "NVIDIA",
+            "vram_gb": 16,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 736,
+            "tier": "consumer"
+        },
+        {
+            "id": "rtx-4090-24gb",
+            "name": "NVIDIA RTX 4090",
+            "vendor": "NVIDIA",
+            "vram_gb": 24,
+            "memory_type": "GDDR6X",
+            "memory_bandwidth_gbps": 1008,
+            "tier": "prosumer"
+        },
+        {
+            "id": "rtx-5090-32gb",
+            "name": "NVIDIA RTX 5090",
+            "vendor": "NVIDIA",
+            "vram_gb": 32,
+            "memory_type": "GDDR7",
+            "memory_bandwidth_gbps": 1792,
+            "tier": "prosumer"
+        },
+        {
+            "id": "a10-24gb",
+            "name": "NVIDIA A10",
+            "vendor": "NVIDIA",
+            "vram_gb": 24,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 600,
+            "tier": "datacenter"
+        },
+        {
+            "id": "a40-48gb",
+            "name": "NVIDIA A40",
+            "vendor": "NVIDIA",
+            "vram_gb": 48,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 696,
+            "tier": "datacenter"
+        },
+        {
+            "id": "l40-48gb",
+            "name": "NVIDIA L40",
+            "vendor": "NVIDIA",
+            "vram_gb": 48,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 864,
+            "tier": "datacenter"
+        },
+        {
+            "id": "l40s-48gb",
+            "name": "NVIDIA L40S",
+            "vendor": "NVIDIA",
+            "vram_gb": 48,
+            "memory_type": "GDDR6",
+            "memory_bandwidth_gbps": 864,
+            "tier": "datacenter"
+        },
+        {
+            "id": "a100-40gb",
+            "name": "NVIDIA A100 (40GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 40,
+            "memory_type": "HBM2e",
+            "memory_bandwidth_gbps": 1555,
+            "tier": "datacenter"
+        },
+        {
+            "id": "a100-80gb",
+            "name": "NVIDIA A100 (80GB)",
+            "vendor": "NVIDIA",
+            "vram_gb": 80,
+            "memory_type": "HBM2e",
+            "memory_bandwidth_gbps": 2039,
+            "tier": "datacenter"
+        },
+        {
+            "id": "h100-pcie-80gb",
+            "name": "NVIDIA H100 PCIe",
+            "vendor": "NVIDIA",
+            "vram_gb": 80,
+            "memory_type": "HBM3",
+            "memory_bandwidth_gbps": 2039,
+            "tier": "datacenter"
+        },
+        {
+            "id": "h100-sxm-80gb",
+            "name": "NVIDIA H100 SXM",
+            "vendor": "NVIDIA",
+            "vram_gb": 80,
+            "memory_type": "HBM3",
+            "memory_bandwidth_gbps": 3350,
+            "tier": "datacenter"
+        },
+        {
+            "id": "h200-141gb",
+            "name": "NVIDIA H200",
+            "vendor": "NVIDIA",
+            "vram_gb": 141,
+            "memory_type": "HBM3e",
+            "memory_bandwidth_gbps": 4800,
+            "tier": "datacenter"
+        },
+        {
+            "id": "mi250x-128gb",
+            "name": "AMD MI250X",
+            "vendor": "AMD",
+            "vram_gb": 128,
+            "memory_type": "HBM2e",
+            "memory_bandwidth_gbps": 3277,
+            "tier": "datacenter"
+        },
+        {
+            "id": "mi300x-192gb",
+            "name": "AMD MI300X",
+            "vendor": "AMD",
+            "vram_gb": 192,
+            "memory_type": "HBM3",
+            "memory_bandwidth_gbps": 5300,
+            "tier": "datacenter"
+        },
+        {
+            "id": "apple-m1-8gb",
+            "name": "Apple M1 (8GB)",
+            "vendor": "Apple",
+            "vram_gb": 8,
+            "memory_type": "Unified",
+            "memory_bandwidth_gbps": 68,
+            "tier": "consumer"
+        },
+        {
+            "id": "apple-m1-16gb",
+            "name": "Apple M1 (16GB)",
+            "vendor": "Apple",
+            "vram_gb": 16,
+            "memory_type": "Unified",
+            "memory_bandwidth_gbps": 68,
+            "tier": "consumer"
+        },
+        {
+            "id": "apple-m2-24gb",
+            "name": "Apple M2 (24GB)",
+            "vendor": "Apple",
+            "vram_gb": 24,
+            "memory_type": "Unified",
+            "memory_bandwidth_gbps": 100,
+            "tier": "consumer"
+        },
+        {
+            "id": "apple-m3-max-128gb",
+            "name": "Apple M3 Max (128GB)",
+            "vendor": "Apple",
+            "vram_gb": 128,
+            "memory_type": "Unified",
+            "memory_bandwidth_gbps": 400,
+            "tier": "prosumer"
+        },
+        {
+            "id": "apple-m4-max-128gb",
+            "name": "Apple M4 Max (128GB)",
+            "vendor": "Apple",
+            "vram_gb": 128,
+            "memory_type": "Unified",
+            "memory_bandwidth_gbps": 546,
+            "tier": "prosumer"
+        },
+        {
+            "id": "custom",
+            "name": "Custom VRAM",
+            "vendor": "Custom",
+            "vram_gb": 0,
+            "memory_type": "Custom",
+            "memory_bandwidth_gbps": 0,
+            "tier": "custom"
+        }
+    ]
+}
