@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="vLLM VRAM Calculator - Calculate GPU memory requirements for LLM deployments. Estimate model weights, KV cache, and activation memory for vLLM inference.">
+    <meta name="keywords" content="vLLM, VRAM, calculator, LLM, GPU, memory, inference, KV cache">
+    <title>vLLM VRAM Calculator - GPU Memory Estimator for LLM Deployments</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <h1>vLLM VRAM Calculator</h1>
+            </div>
+            <div class="header-links">
+                <a href="https://github.com/Tugaytalha/vllm-vram-calculator" target="_blank" class="github-link">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                    </svg>
+                    <span>GitHub</span>
+                </a>
+                <a href="/api/docs" target="_blank" class="api-link">API Docs</a>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- Configuration Panel -->
+            <section class="config-panel">
+                <div class="panel-header">
+                    <h2>Configuration</h2>
+                </div>
+
+                <!-- Mode Toggle -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="inference">Inference</button>
+                    <button class="mode-btn" data-mode="fine-tuning" disabled title="Coming soon">Fine-tuning</button>
+                </div>
+
+                <!-- Model Selection -->
+                <div class="form-group">
+                    <label for="model-select">Select Model <span class="required">*</span></label>
+                    <div class="select-wrapper">
+                        <select id="model-select" class="form-select">
+                            <option value="">Loading models...</option>
+                        </select>
+                        <span class="select-icon">▼</span>
+                    </div>
+                </div>
+
+                <!-- Inference Quantization -->
+                <div class="form-group">
+                    <label for="quantization-select">Inference Quantization</label>
+                    <p class="form-hint">Precision for model weights. Lower uses less VRAM but may affect quality.</p>
+                    <div class="select-wrapper">
+                        <select id="quantization-select" class="form-select">
+                            <option value="fp32">FP32 (Full Precision)</option>
+                            <option value="fp16" selected>FP16 (Half Precision)</option>
+                            <option value="bf16">BF16 (Brain Float)</option>
+                            <option value="int8">INT8 (8-bit)</option>
+                            <option value="int4">INT4 (4-bit)</option>
+                            <option value="awq">AWQ (4-bit)</option>
+                            <option value="gptq">GPTQ (4-bit)</option>
+                        </select>
+                        <span class="select-icon">▼</span>
+                    </div>
+                </div>
+
+                <!-- KV Cache Quantization -->
+                <div class="form-group">
+                    <label for="kv-cache-select">KV Cache Quantization</label>
+                    <p class="form-hint">KV Cache precision. Lower values reduce VRAM, especially for long sequences.</p>
+                    <div class="select-wrapper">
+                        <select id="kv-cache-select" class="form-select">
+                            <option value="fp32">FP32</option>
+                            <option value="fp16" selected>FP16 / BF16 (Default)</option>
+                            <option value="int8">INT8</option>
+                            <option value="fp8">FP8</option>
+                        </select>
+                        <span class="select-icon">▼</span>
+                    </div>
+                </div>
+
+                <!-- Hardware Configuration -->
+                <div class="form-row">
+                    <div class="form-group flex-2">
+                        <label for="gpu-select">Hardware Configuration</label>
+                        <p class="form-hint">Select your GPU or set custom VRAM</p>
+                        <div class="select-wrapper">
+                            <select id="gpu-select" class="form-select">
+                                <option value="">Loading GPUs...</option>
+                            </select>
+                            <span class="select-icon">▼</span>
+                        </div>
+                    </div>
+                    <div class="form-group flex-1">
+                        <label for="num-gpus">Num GPUs</label>
+                        <p class="form-hint">Devices for parallel inference</p>
+                        <div class="number-input">
+                            <button class="num-btn" data-action="decrease" data-target="num-gpus">−</button>
+                            <input type="number" id="num-gpus" value="1" min="1" max="8">
+                            <button class="num-btn" data-action="increase" data-target="num-gpus">+</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Custom VRAM (hidden by default) -->
+                <div class="form-group" id="custom-vram-group" style="display: none;">
+                    <label for="custom-vram">Custom VRAM (GB)</label>
+                    <input type="number" id="custom-vram" class="form-input" value="24" min="1" max="1000">
+                </div>
+
+                <!-- Input Parameters Section -->
+                <div class="section-divider">
+                    <h3>Input Parameters</h3>
+                    <div class="toggle-group">
+                        <label class="toggle-label">Slider</label>
+                        <label class="toggle">
+                            <input type="checkbox" id="slider-toggle" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Batch Size -->
+                <div class="form-group slider-group">
+                    <div class="slider-header">
+                        <label for="batch-size">Batch Size</label>
+                        <div class="slider-value-wrapper">
+                            <label class="log-scale-toggle">
+                                <input type="checkbox" id="batch-log-scale">
+                                <span>Log Scale</span>
+                            </label>
+                            <span class="slider-value" id="batch-size-value">1</span>
+                        </div>
+                    </div>
+                    <p class="form-hint">Inputs processed simultaneously per step (affects throughput & latency)</p>
+                    <input type="range" id="batch-size" class="slider" min="1" max="32" value="1">
+                    <div class="slider-markers">
+                        <span>1</span>
+                        <span>8</span>
+                        <span>16</span>
+                        <span>32</span>
+                    </div>
+                </div>
+
+                <!-- Sequence Length -->
+                <div class="form-group slider-group">
+                    <div class="slider-header">
+                        <label for="sequence-length">Sequence Length</label>
+                        <span class="slider-value" id="sequence-length-value">4,096</span>
+                    </div>
+                    <p class="form-hint">Max tokens per input; impacts KV cache (also affected by attention structure) & activations.</p>
+                    <input type="range" id="sequence-length" class="slider" min="128" max="131072" value="4096" step="128">
+                    <div class="slider-markers">
+                        <span>2K</span>
+                        <span>4K</span>
+                        <span>8K</span>
+                        <span>16K</span>
+                        <span>32K</span>
+                    </div>
+                </div>
+
+                <!-- Concurrent Users -->
+                <div class="form-group slider-group">
+                    <div class="slider-header">
+                        <label for="concurrent-users">Concurrent Users</label>
+                        <div class="slider-value-wrapper">
+                            <label class="log-scale-toggle">
+                                <input type="checkbox" id="users-log-scale">
+                                <span>Log Scale</span>
+                            </label>
+                            <span class="slider-value" id="concurrent-users-value">1</span>
+                        </div>
+                    </div>
+                    <p class="form-hint">Number of users running inference simultaneously (affects memory usage and per-user performance)</p>
+                    <input type="range" id="concurrent-users" class="slider" min="1" max="100" value="1">
+                    <div class="slider-markers">
+                        <span>1</span>
+                        <span>4</span>
+                        <span>8</span>
+                        <span>16</span>
+                        <span>32</span>
+                    </div>
+                </div>
+
+                <!-- Footer Link -->
+                <div class="panel-footer">
+                    <a href="https://github.com/Tugaytalha/vllm-vram-calculator" target="_blank" class="open-source-badge">
+                        <span class="badge-label">OPEN SOURCE</span>
+                        <svg viewBox="0 0 24 24" fill="currentColor" class="badge-icon">
+                            <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/>
+                        </svg>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Results Panel -->
+            <section class="results-panel">
+                <div class="panel-header">
+                    <h2>Performance & Memory Results</h2>
+                </div>
+
+                <!-- VRAM Gauge -->
+                <div class="vram-gauge-container">
+                    <div class="vram-gauge">
+                        <svg class="gauge-svg" viewBox="0 0 200 200">
+                            <circle class="gauge-bg" cx="100" cy="100" r="85" />
+                            <circle class="gauge-fill" cx="100" cy="100" r="85" id="gauge-fill" />
+                        </svg>
+                        <div class="gauge-center">
+                            <span class="gauge-percent" id="gauge-percent">0%</span>
+                            <span class="gauge-label">VRAM</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="status-container">
+                    <span class="status-badge" id="status-badge">CALCULATING...</span>
+                </div>
+
+                <!-- Total VRAM Display -->
+                <div class="total-vram-display">
+                    <span class="total-vram-value" id="total-vram">0.00 GB</span>
+                    <span class="total-vram-label" id="vram-of-total">of 24 GB VRAM</span>
+                </div>
+
+                <!-- Per-User Breakdown -->
+                <div class="per-user-breakdown" id="per-user-section">
+                    <span class="breakdown-icon">👥</span>
+                    <span id="shared-memory">0 GB shared</span>
+                    <span>+</span>
+                    <span id="per-user-memory">0 GB per user</span>
+                </div>
+                <p class="breakdown-hint" id="concurrent-hint">Total for 1 concurrent user</p>
+
+                <!-- Additional Metrics -->
+                <div class="metrics-grid">
+                    <div class="metric-item">
+                        <span class="metric-icon">⏱️</span>
+                        <span class="metric-label">Generation Speed:</span>
+                        <span class="metric-value">N/A</span>
+                        <span class="metric-hint" title="Estimated tokens per second">ⓘ</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">⚡</span>
+                        <span class="metric-label">Time to First Token:</span>
+                        <span class="metric-value">~0ms</span>
+                        <span class="metric-hint" title="Estimated latency">ⓘ</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="metric-icon">📊</span>
+                        <span class="metric-label">Total Throughput:</span>
+                        <span class="metric-value">N/A</span>
+                        <span class="metric-hint" title="Total tokens per second across all users">ⓘ</span>
+                    </div>
+                </div>
+
+                <!-- Model Info Card -->
+                <div class="model-info-card" id="model-info-card">
+                    <h3 id="model-info-name">Select a model</h3>
+                    <div class="model-info-grid">
+                        <div class="info-row">
+                            <span class="info-label">Weights:</span>
+                            <span class="info-value" id="info-weights">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">KV Cache:</span>
+                            <span class="info-value" id="info-kv-cache">-</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Attention Structure:</span>
+                            <span class="info-value" id="info-attention">-</span>
+                            <span class="info-hint" title="MHA=Multi-Head Attention, GQA=Grouped Query Attention, MLA=Multi-head Latent Attention">ⓘ</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Positional Embeddings:</span>
+                            <span class="info-value" id="info-positional">RoPE</span>
+                        </div>
+                    </div>
+                    <p class="model-mode-info" id="mode-info">Mode: Inference | Batch: 1 | Users: 1</p>
+                </div>
+
+                <!-- Memory Allocation Chart -->
+                <div class="memory-allocation">
+                    <h3>Memory Allocation</h3>
+                    <div class="allocation-bar">
+                        <div class="allocation-segment weights" id="alloc-weights" style="width: 25%"></div>
+                        <div class="allocation-segment kv-cache" id="alloc-kv-cache" style="width: 25%"></div>
+                        <div class="allocation-segment activations" id="alloc-activations" style="width: 25%"></div>
+                        <div class="allocation-segment overhead" id="alloc-overhead" style="width: 25%"></div>
+                    </div>
+                    <div class="allocation-legend">
+                        <div class="legend-item">
+                            <div class="legend-color weights"></div>
+                            <div class="legend-info">
+                                <span class="legend-label">Base Model Weights</span>
+                                <span class="legend-value" id="legend-weights">0.00 GB</span>
+                                <span class="legend-percent" id="legend-weights-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color kv-cache"></div>
+                            <div class="legend-info">
+                                <span class="legend-label">KV Cache</span>
+                                <span class="legend-value" id="legend-kv-cache">0.00 GB</span>
+                                <span class="legend-percent" id="legend-kv-cache-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color activations"></div>
+                            <div class="legend-info">
+                                <span class="legend-label">Activations</span>
+                                <span class="legend-value" id="legend-activations">0.00 GB</span>
+                                <span class="legend-percent" id="legend-activations-pct">0%</span>
+                            </div>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-color overhead"></div>
+                            <div class="legend-info">
+                                <span class="legend-label">Framework Overhead</span>
+                                <span class="legend-value" id="legend-overhead">0.00 GB</span>
+                                <span class="legend-percent" id="legend-overhead-pct">0%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Max Concurrent Users -->
+                <div class="max-users-card">
+                    <h3>Maximum Capacity</h3>
+                    <div class="max-users-value">
+                        <span id="max-users">0</span>
+                        <span class="max-users-label">concurrent users</span>
+                    </div>
+                    <p class="max-users-hint">Based on available VRAM and current configuration</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>vLLM VRAM Calculator v0.1.0 | Made with ❤️ by <a href="https://github.com/Tugaytalha" target="_blank">Tugay Talha İçen</a></p>
+            <p class="footer-disclaimer">Estimates are approximate. Actual memory usage may vary based on framework version, CUDA overhead, and specific model implementations.</p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
