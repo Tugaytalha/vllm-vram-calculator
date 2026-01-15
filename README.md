@@ -1,0 +1,2 @@
+# vllm-vram-calculator
+vLLM VRAM Calculator provides precise memory estimates for LLM deployments. Calculate model weights and KV cache requirements across various precisions (FP16, AWQ, GPTQ) and multi-GPU setups. Features a clean, interactive Web Interface for manual testing and a REST API for seamless integration into your MLOps pipelines. Stop guessing your hardware needs and prevent OOM errors before you deploy.
