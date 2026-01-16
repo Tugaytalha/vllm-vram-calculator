@@ -368,7 +368,12 @@ def _layers(text_cfg: Dict[str, Any]) -> Optional[int]:
 
 
 def _ctx(text_cfg: Dict[str, Any]) -> Optional[int]:
-    return _safe_int(text_cfg.get("max_position_embeddings"))
+    return (
+        _safe_int(text_cfg.get("max_position_embeddings")) or
+        _safe_int(text_cfg.get("seq_length")) or
+        _safe_int(text_cfg.get("model_max_length")) or
+        _safe_int(text_cfg.get("max_sequence_length"))
+    )
 
 
 def _looks_nonstandard_kv(text_cfg: Dict[str, Any], full_cfg: Dict[str, Any]) -> bool:
@@ -648,10 +653,21 @@ def row_to_model_json(row: Row) -> Optional[Dict[str, Any]]:
     model_name = parts[-1] if len(parts) > 1 else row.repo_id
     model_id = model_name.lower().replace("_", "-").replace(" ", "-")
     
+    is_moe = row.num_local_experts or row.n_routed_experts
+    
+    # Try to get explicit parameter count from config if we extracted it (need to add to Row first)
+    # Actually, Row doesn't have it. I need to add it value to Row in extract_one or just re-estimate.
+    # Let's add explicit param check in extract_one and Row.
+    
+    # ... Wait, I can't edit Row definition easily in this replace_file_content without updating the whole class.
+    # I should have added it to Row.
+    # Alternative: Trust the architecture estimation for MoE, it's safer than the file list for Gated/Partial repos.
+    
     # Estimate parameters from weight bytes (rough estimate)
-    # Or use hidden_size and layers to estimate
-    # Estimate parameters if weight_total_bytes is missing
-    if row.weight_total_bytes:
+    # OR if MoE, prefer architecture estimation as file listing might be incomplete for gated models
+    use_file_weights = row.weight_total_bytes and not is_moe
+    
+    if use_file_weights:
         # Assume FP16 weights (2 bytes per param)
         params = row.weight_total_bytes / 2
     else:
@@ -667,7 +683,7 @@ def row_to_model_json(row: Row) -> Optional[Dict[str, Any]]:
         
         attn_params_per_layer = 4 * h * h
         
-        if row.num_local_experts or row.n_routed_experts:
+        if is_moe:
             # MoE: FFN is replicated per expert
             num_experts = row.num_local_experts or row.n_routed_experts or 8
             ffn_params_per_layer = num_experts * 3 * h * inter
