@@ -505,10 +505,16 @@ def extract_one(api: HfApi, repo_id: str) -> Row:
         torch_dtype = text_cfg.get("torch_dtype") or cfg.get("torch_dtype")
 
         # MoE (covers several families)
-        num_local_experts = _safe_int(text_cfg.get("num_local_experts"))
+        num_local_experts = _safe_int(text_cfg.get("num_local_experts")) or _safe_int(text_cfg.get("num_experts")) or _safe_int(text_cfg.get("moe_num_experts"))
         n_routed_experts = _safe_int(text_cfg.get("n_routed_experts"))
         num_experts_per_tok = _safe_int(text_cfg.get("num_experts_per_tok"))
         moe_topk = _safe_int(text_cfg.get("moe_topk") or text_cfg.get("num_experts_per_tok"))
+        
+        # Override for specific models if config is elusive but we know them
+        if "llama-4" in repo_id.lower() and not num_local_experts:
+             # Heuristic for Llama-4 if keys missing
+             if "16e" in repo_id.lower(): num_local_experts = 16
+             if "128e" in repo_id.lower(): num_local_experts = 128
 
         # KV cache (standard only)
         kv_bpt = _kv_bytes_per_token_fp16(text_cfg, cfg)
@@ -517,7 +523,14 @@ def extract_one(api: HfApi, repo_id: str) -> Row:
         
         # Attention and architecture type
         attention_type = _get_attention_type(text_cfg, cfg)
-        architecture_type = _get_model_type(text_cfg, cfg)
+        
+        # Improve model type detection
+        if num_local_experts or n_routed_experts:
+             model_type_str = "moe"
+        else:
+             model_type_str = _get_model_type(text_cfg, cfg)
+        
+        architecture_type = model_type_str
 
         # Weight inventory via model_info (may require token for gated repos)
         weight_files_count = None

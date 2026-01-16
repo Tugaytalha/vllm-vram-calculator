@@ -1,2 +1,5 @@
 */__pycache__/*
 .env
+models_hf.json
+model_details.csv
+model_details.jsonl
