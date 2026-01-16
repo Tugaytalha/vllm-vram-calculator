@@ -637,12 +637,33 @@ def row_to_model_json(row: Row) -> Optional[Dict[str, Any]]:
     
     # Estimate parameters from weight bytes (rough estimate)
     # Or use hidden_size and layers to estimate
+    # Estimate parameters if weight_total_bytes is missing
     if row.weight_total_bytes:
         # Assume FP16 weights (2 bytes per param)
         params = row.weight_total_bytes / 2
     else:
-        # Rough estimate based on architecture
-        params = row.hidden_size * row.hidden_size * row.layers * 12 if row.hidden_size and row.layers else 0
+        # Better estimation based on architecture
+        h = row.hidden_size or 4096
+        L = row.layers or 32
+        inter = row.intermediate_size or (h * 4)
+        vocab = row.vocab_size or 32000
+        
+        # Base logic:
+        # Attention: 4 * h^2 (Q, K, V, O) - roughly
+        # FFN (SwiGLU): 3 * h * intermediate (Gate, Up, Down)
+        
+        attn_params_per_layer = 4 * h * h
+        
+        if row.num_local_experts or row.n_routed_experts:
+            # MoE: FFN is replicated per expert
+            num_experts = row.num_local_experts or row.n_routed_experts or 8
+            ffn_params_per_layer = num_experts * 3 * h * inter
+        else:
+            # Dense
+            ffn_params_per_layer = 3 * h * inter
+            
+        # Total approx
+        params = (L * (attn_params_per_layer + ffn_params_per_layer)) + (vocab * h)
     
     # Get provider from repo_id
     provider = parts[0] if len(parts) > 1 else "Unknown"
