@@ -60,6 +60,10 @@ const elements = {
     legendActivationsPct: document.getElementById('legend-activations-pct'),
     legendOverhead: document.getElementById('legend-overhead'),
     legendOverheadPct: document.getElementById('legend-overhead-pct'),
+    // Scale toggles
+    batchLogScale: document.getElementById('batch-log-scale'),
+    sequenceLogScale: document.getElementById('sequence-log-scale'),
+    usersLogScale: document.getElementById('users-log-scale'),
 };
 
 // Utility Functions
@@ -91,39 +95,157 @@ function debounce(func, wait) {
     };
 }
 
-// Update slider visual progress
-function updateSliderProgress(slider) {
+// Update slider visual progress and marker positions
+function updateSliderProgress(sliderId) {
+    const slider = document.getElementById(sliderId);
+    if (!slider) return;
+    const group = slider.closest('.slider-group');
+    const config = sliderConfigs[sliderId];
+
     const min = parseFloat(slider.min);
     const max = parseFloat(slider.max);
     const value = parseFloat(slider.value);
+
     const percent = ((value - min) / (max - min)) * 100;
+
+    slider.style.background = `linear-gradient(to right, var(--accent-primary) ${percent}%, var(--bg-tertiary) ${percent}%)`;
+
     slider.style.background = `linear-gradient(to right, var(--accent-primary) ${percent}%, var(--bg-tertiary) ${percent}%)`;
 }
 
-// Get current value for a parameter (slider or manual)
-function getBatchSize() {
-    if (useSliderMode) {
-        return parseInt(elements.batchSize.value);
+// Scale configurations
+const sliderConfigs = {
+    'batch-size': { min: 1, max: 32, step: 1, isLog: false },
+    'sequence-length': { min: 1024, max: 131072, step: 128, isLog: true },
+    'concurrent-users': { min: 1, max: 100, step: 1, isLog: false }
+};
+
+// Generate and place markers dynamically
+function updateSliderMarkers(sliderId) {
+    const slider = document.getElementById(sliderId);
+    const group = slider.closest('.slider-group');
+    const markersContainer = group.querySelector('.slider-markers');
+    if (!markersContainer) return;
+
+    markersContainer.innerHTML = '';
+    const config = sliderConfigs[sliderId];
+
+    let values = [];
+    const min = config.min;
+    const max = config.max;
+
+    if (config.isLog) {
+        // Powers of 2 starting from min
+        let val = min;
+        while (val < max) {
+            values.push(val);
+            val *= 2;
+        }
+        values.push(max);
+        // Filter if too crowded? For now, standard powers are usually fine.
     } else {
-        return parseInt(elements.batchSizeManual.value) || 1;
+        // Linear: 5 points
+        values = [min];
+        const step = (max - min) / 4;
+        for (let i = 1; i < 4; i++) {
+            values.push(Math.round(min + step * i));
+        }
+        values.push(max);
+    }
+
+    const formatFn = sliderId === 'sequence-length' ? formatSequenceLength : formatNumber;
+
+    values.forEach(val => {
+        const span = document.createElement('span');
+        span.textContent = formatFn(val);
+
+        // Calculate position
+        const sliderVal = valToSlider(val, config);
+        const sMin = parseFloat(slider.min);
+        const sMax = parseFloat(slider.max);
+
+        // Safety check for range
+        let percent = 0;
+        if (sMax > sMin) {
+            percent = (sliderVal - sMin) / (sMax - sMin) * 100;
+        }
+
+        span.style.position = 'absolute';
+        span.style.left = `${percent}%`;
+        span.style.transform = 'translateX(-50%)';
+        // Hide if overlapping edges too much?
+        if (percent < 0 || percent > 100) return;
+
+        markersContainer.appendChild(span);
+    });
+}
+
+// Map display value to slider value based on scale
+function valToSlider(val, config) {
+    if (config.isLog) {
+        return Math.log2(val);
+    }
+    return val;
+}
+
+// Map slider value back to display value
+function sliderToVal(sliderVal, config) {
+    if (config.isLog) {
+        return Math.pow(2, sliderVal);
+    }
+    return sliderVal;
+}
+
+// Update slider attributes based on scale toggle
+function updateSliderScale(sliderId) {
+    const slider = document.getElementById(sliderId);
+    const config = sliderConfigs[sliderId];
+    const toggle = document.querySelector(`#${sliderId}-group .log-scale-toggle input`);
+
+    // Get current real value before change
+    const currentVal = getParameterValue(sliderId);
+
+    config.isLog = toggle ? toggle.checked : false;
+
+    if (config.isLog) {
+        slider.min = Math.log2(config.min);
+        slider.max = Math.log2(config.max);
+        slider.step = 0.01; // Allow smooth log transition
+        slider.value = Math.log2(currentVal);
+    } else {
+        slider.min = config.min;
+        slider.max = config.max;
+        slider.step = config.step;
+        slider.value = currentVal;
+    }
+
+    // Generate markers
+    updateSliderMarkers(sliderId);
+
+    updateSliderProgress(sliderId);
+
+    const valueEl = elements[sliderId.replace(/-([a-z])/g, (g) => g[1].toUpperCase()) + 'Value'];
+    const formatFn = sliderId === 'sequence-length' ? formatSequenceLength : formatNumber;
+    updateSliderValue(slider, valueEl, formatFn);
+}
+
+// Helper to get real numeric value for any parameter
+function getParameterValue(id) {
+    const config = sliderConfigs[id];
+    const slider = document.getElementById(id);
+    const manualInput = elements[id.replace(/-([a-z])/g, (g) => g[1].toUpperCase()) + 'Manual'];
+
+    if (useSliderMode) {
+        let val = parseFloat(slider.value);
+        return Math.round(sliderToVal(val, config));
+    } else {
+        return parseInt(manualInput.value) || config.min;
     }
 }
 
-function getSequenceLength() {
-    if (useSliderMode) {
-        return parseInt(elements.sequenceLength.value);
-    } else {
-        return parseInt(elements.sequenceLengthManual.value) || 4096;
-    }
-}
-
-function getConcurrentUsers() {
-    if (useSliderMode) {
-        return parseInt(elements.concurrentUsers.value);
-    } else {
-        return parseInt(elements.concurrentUsersManual.value) || 1;
-    }
-}
+function getBatchSize() { return getParameterValue('batch-size'); }
+function getSequenceLength() { return getParameterValue('sequence-length'); }
+function getConcurrentUsers() { return getParameterValue('concurrent-users'); }
 
 // Toggle between slider and manual input modes
 function toggleInputMode(useSlider) {
@@ -142,21 +264,25 @@ function toggleInputMode(useSlider) {
         // Sync manual values to sliders
         if (elements.batchSizeManual) {
             const batchVal = parseInt(elements.batchSizeManual.value) || 1;
-            elements.batchSize.value = Math.min(Math.max(batchVal, 1), 32);
+            // Config-aware set
+            const config = sliderConfigs['batch-size'];
+            elements.batchSize.value = valToSlider(Math.min(Math.max(batchVal, config.min), config.max), config);
             updateSliderValue(elements.batchSize, elements.batchSizeValue);
-            updateSliderProgress(elements.batchSize);
+            updateSliderProgress('batch-size');
         }
         if (elements.sequenceLengthManual) {
+            const config = sliderConfigs['sequence-length'];
             const seqVal = parseInt(elements.sequenceLengthManual.value) || 4096;
-            elements.sequenceLength.value = Math.min(Math.max(seqVal, 128), 131072);
+            elements.sequenceLength.value = valToSlider(Math.min(Math.max(seqVal, config.min), config.max), config);
             updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
-            updateSliderProgress(elements.sequenceLength);
+            updateSliderProgress('sequence-length');
         }
         if (elements.concurrentUsersManual) {
+            const config = sliderConfigs['concurrent-users'];
             const usersVal = parseInt(elements.concurrentUsersManual.value) || 1;
-            elements.concurrentUsers.value = Math.min(Math.max(usersVal, 1), 100);
+            elements.concurrentUsers.value = valToSlider(Math.min(Math.max(usersVal, config.min), config.max), config);
             updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
-            updateSliderProgress(elements.concurrentUsers);
+            updateSliderProgress('concurrent-users');
         }
     } else {
         sliderModes.forEach(el => el.style.display = 'none');
@@ -321,8 +447,9 @@ function populateGPUSelect() {
 }
 
 function updateSliderValue(slider, valueElement, formatFn = formatNumber) {
-    const value = parseInt(slider.value);
-    valueElement.textContent = formatFn(value);
+    const config = sliderConfigs[slider.id];
+    const realValue = Math.round(sliderToVal(parseFloat(slider.value), config));
+    valueElement.textContent = formatFn(realValue);
 }
 
 function setCalculating(isCalculating) {
@@ -436,6 +563,23 @@ const debouncedCalculate = debounce(() => calculateVRAM(), 300);
 function setupEventListeners() {
     // Model selection
     elements.modelSelect.addEventListener('change', () => {
+        // Update Sequence Length Max based on model
+        const modelId = elements.modelSelect.value;
+        const model = modelsData.find(m => m.id === modelId);
+        if (model && model.architecture && model.architecture.max_position_embeddings) {
+            const maxSeq = model.architecture.max_position_embeddings;
+            // Update config
+            sliderConfigs['sequence-length'].max = maxSeq;
+
+            // Update manual input max
+            if (elements.sequenceLengthManual) {
+                elements.sequenceLengthManual.max = maxSeq;
+            }
+
+            // Refresh slider
+            updateSliderScale('sequence-length');
+        }
+
         calculateVRAM();
     });
 
@@ -500,23 +644,43 @@ function setupEventListeners() {
     // Batch size slider
     elements.batchSize.addEventListener('input', () => {
         updateSliderValue(elements.batchSize, elements.batchSizeValue);
-        updateSliderProgress(elements.batchSize);
+        updateSliderProgress('batch-size');
     });
     elements.batchSize.addEventListener('change', debouncedCalculate);
 
     // Sequence length slider
     elements.sequenceLength.addEventListener('input', () => {
         updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
-        updateSliderProgress(elements.sequenceLength);
+        updateSliderProgress('sequence-length');
     });
     elements.sequenceLength.addEventListener('change', debouncedCalculate);
 
     // Concurrent users slider
     elements.concurrentUsers.addEventListener('input', () => {
         updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
-        updateSliderProgress(elements.concurrentUsers);
+        updateSliderProgress('concurrent-users');
     });
     elements.concurrentUsers.addEventListener('change', debouncedCalculate);
+
+    // Scale toggles
+    if (elements.batchLogScale) {
+        elements.batchLogScale.addEventListener('change', () => {
+            updateSliderScale('batch-size');
+        });
+    }
+    if (elements.sequenceLogScale) {
+        elements.sequenceLogScale.addEventListener('change', () => {
+            updateSliderScale('sequence-length');
+        });
+    }
+    if (elements.usersLogScale) {
+        elements.usersLogScale.addEventListener('change', () => {
+            updateSliderScale('concurrent-users');
+        });
+    }
+
+    // Initialize initial scales
+    if (elements.sequenceLogScale) updateSliderScale('sequence-length');
 
     // Manual input fields
     if (elements.batchSizeManual) {
@@ -551,9 +715,9 @@ async function init() {
     updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
     updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
 
-    updateSliderProgress(elements.batchSize);
-    updateSliderProgress(elements.sequenceLength);
-    updateSliderProgress(elements.concurrentUsers);
+    updateSliderProgress('batch-size');
+    updateSliderProgress('sequence-length');
+    updateSliderProgress('concurrent-users');
 
     // Fetch data
     await Promise.all([fetchModels(), fetchGPUs()]);

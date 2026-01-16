@@ -497,10 +497,16 @@ body {
 }
 
 .slider-markers {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
+    position: relative;
+    height: 1.25rem;
+    margin-top: 4px;
     color: var(--text-muted);
+}
+
+.slider-markers span {
+    position: absolute;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 /* Slider/Manual Mode Toggle Containers */

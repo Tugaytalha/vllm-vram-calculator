@@ -173,25 +173,27 @@
                 <div class="form-group slider-group" id="sequence-length-group">
                     <div class="slider-header">
                         <label for="sequence-length">Sequence Length</label>
-                        <span class="slider-value" id="sequence-length-value">4,096</span>
+                        <div class="slider-value-wrapper">
+                            <label class="log-scale-toggle">
+                                <input type="checkbox" id="sequence-log-scale" checked>
+                                <span>Log Scale</span>
+                            </label>
+                            <span class="slider-value" id="sequence-length-value">4,096</span>
+                        </div>
                     </div>
                     <p class="form-hint">Max tokens per input; impacts KV cache (also affected by attention structure) &
                         activations.</p>
                     <!-- Slider mode -->
                     <div class="slider-mode">
-                        <input type="range" id="sequence-length" class="slider" min="128" max="131072" value="4096"
+                        <input type="range" id="sequence-length" class="slider" min="1024" max="131072" value="4096"
                             step="128">
                         <div class="slider-markers">
-                            <span>2K</span>
-                            <span>4K</span>
-                            <span>8K</span>
-                            <span>16K</span>
-                            <span>32K</span>
+                            <!-- Markers generated dynamically -->
                         </div>
                     </div>
                     <!-- Manual mode -->
                     <div class="manual-mode" style="display: none;">
-                        <input type="number" id="sequence-length-manual" class="form-input" min="128" max="131072"
+                        <input type="number" id="sequence-length-manual" class="form-input" min="1024" max="131072"
                             step="128" value="4096">
                     </div>
                 </div>
