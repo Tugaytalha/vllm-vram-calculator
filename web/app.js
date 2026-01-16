@@ -12,6 +12,7 @@ let modelsData = [];
 let gpusData = [];
 let currentResult = null;
 let debounceTimer = null;
+let useSliderMode = true;
 
 // DOM Elements
 const elements = {
@@ -23,10 +24,13 @@ const elements = {
     customVramGroup: document.getElementById('custom-vram-group'),
     customVram: document.getElementById('custom-vram'),
     batchSize: document.getElementById('batch-size'),
+    batchSizeManual: document.getElementById('batch-size-manual'),
     batchSizeValue: document.getElementById('batch-size-value'),
     sequenceLength: document.getElementById('sequence-length'),
+    sequenceLengthManual: document.getElementById('sequence-length-manual'),
     sequenceLengthValue: document.getElementById('sequence-length-value'),
     concurrentUsers: document.getElementById('concurrent-users'),
+    concurrentUsersManual: document.getElementById('concurrent-users-manual'),
     concurrentUsersValue: document.getElementById('concurrent-users-value'),
     sliderToggle: document.getElementById('slider-toggle'),
     gaugeFill: document.getElementById('gauge-fill'),
@@ -87,6 +91,91 @@ function debounce(func, wait) {
     };
 }
 
+// Update slider visual progress
+function updateSliderProgress(slider) {
+    const min = parseFloat(slider.min);
+    const max = parseFloat(slider.max);
+    const value = parseFloat(slider.value);
+    const percent = ((value - min) / (max - min)) * 100;
+    slider.style.background = `linear-gradient(to right, var(--accent-primary) ${percent}%, var(--bg-tertiary) ${percent}%)`;
+}
+
+// Get current value for a parameter (slider or manual)
+function getBatchSize() {
+    if (useSliderMode) {
+        return parseInt(elements.batchSize.value);
+    } else {
+        return parseInt(elements.batchSizeManual.value) || 1;
+    }
+}
+
+function getSequenceLength() {
+    if (useSliderMode) {
+        return parseInt(elements.sequenceLength.value);
+    } else {
+        return parseInt(elements.sequenceLengthManual.value) || 4096;
+    }
+}
+
+function getConcurrentUsers() {
+    if (useSliderMode) {
+        return parseInt(elements.concurrentUsers.value);
+    } else {
+        return parseInt(elements.concurrentUsersManual.value) || 1;
+    }
+}
+
+// Toggle between slider and manual input modes
+function toggleInputMode(useSlider) {
+    useSliderMode = useSlider;
+
+    // Get all slider groups
+    const sliderModes = document.querySelectorAll('.slider-mode');
+    const manualModes = document.querySelectorAll('.manual-mode');
+    const sliderValues = document.querySelectorAll('.slider-value');
+
+    if (useSlider) {
+        sliderModes.forEach(el => el.style.display = 'block');
+        manualModes.forEach(el => el.style.display = 'none');
+        sliderValues.forEach(el => el.style.display = 'inline');
+
+        // Sync manual values to sliders
+        if (elements.batchSizeManual) {
+            const batchVal = parseInt(elements.batchSizeManual.value) || 1;
+            elements.batchSize.value = Math.min(Math.max(batchVal, 1), 32);
+            updateSliderValue(elements.batchSize, elements.batchSizeValue);
+            updateSliderProgress(elements.batchSize);
+        }
+        if (elements.sequenceLengthManual) {
+            const seqVal = parseInt(elements.sequenceLengthManual.value) || 4096;
+            elements.sequenceLength.value = Math.min(Math.max(seqVal, 128), 131072);
+            updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
+            updateSliderProgress(elements.sequenceLength);
+        }
+        if (elements.concurrentUsersManual) {
+            const usersVal = parseInt(elements.concurrentUsersManual.value) || 1;
+            elements.concurrentUsers.value = Math.min(Math.max(usersVal, 1), 100);
+            updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
+            updateSliderProgress(elements.concurrentUsers);
+        }
+    } else {
+        sliderModes.forEach(el => el.style.display = 'none');
+        manualModes.forEach(el => el.style.display = 'block');
+        sliderValues.forEach(el => el.style.display = 'none');
+
+        // Sync slider values to manual inputs
+        if (elements.batchSizeManual) {
+            elements.batchSizeManual.value = elements.batchSize.value;
+        }
+        if (elements.sequenceLengthManual) {
+            elements.sequenceLengthManual.value = elements.sequenceLength.value;
+        }
+        if (elements.concurrentUsersManual) {
+            elements.concurrentUsersManual.value = elements.concurrentUsers.value;
+        }
+    }
+}
+
 // API Functions
 async function fetchModels() {
     try {
@@ -117,28 +206,28 @@ async function fetchGPUs() {
 async function calculateVRAM() {
     const modelId = elements.modelSelect.value;
     const gpuId = elements.gpuSelect.value;
-    
+
     if (!modelId || !gpuId) {
         return;
     }
-    
+
     setCalculating(true);
-    
+
     const request = {
         model_id: modelId,
         gpu_id: gpuId,
         quantization: elements.quantizationSelect.value,
         kv_cache_quantization: elements.kvCacheSelect.value,
-        batch_size: parseInt(elements.batchSize.value),
-        sequence_length: parseInt(elements.sequenceLength.value),
-        concurrent_users: parseInt(elements.concurrentUsers.value),
+        batch_size: getBatchSize(),
+        sequence_length: getSequenceLength(),
+        concurrent_users: getConcurrentUsers(),
         num_gpus: parseInt(elements.numGpus.value),
     };
-    
+
     if (gpuId === 'custom') {
         request.custom_vram_gb = parseFloat(elements.customVram.value);
     }
-    
+
     try {
         const response = await fetch(`${API_BASE}/api/calculate`, {
             method: 'POST',
@@ -147,12 +236,12 @@ async function calculateVRAM() {
             },
             body: JSON.stringify(request),
         });
-        
+
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.detail || 'Calculation failed');
         }
-        
+
         currentResult = await response.json();
         updateResults(currentResult);
     } catch (error) {
@@ -166,7 +255,7 @@ async function calculateVRAM() {
 // UI Functions
 function populateModelSelect() {
     elements.modelSelect.innerHTML = '<option value="">Select a model...</option>';
-    
+
     // Group models by provider
     const providers = {};
     modelsData.forEach(model => {
@@ -175,29 +264,29 @@ function populateModelSelect() {
         }
         providers[model.provider].push(model);
     });
-    
+
     // Create optgroups
     Object.keys(providers).sort().forEach(provider => {
         const optgroup = document.createElement('optgroup');
         optgroup.label = provider;
-        
+
         providers[provider].forEach(model => {
             const option = document.createElement('option');
             option.value = model.id;
-            const params = model.parameters >= 1e9 
+            const params = model.parameters >= 1e9
                 ? `${(model.parameters / 1e9).toFixed(1)}B`
                 : `${(model.parameters / 1e6).toFixed(0)}M`;
             option.textContent = `${model.name} (${params})`;
             optgroup.appendChild(option);
         });
-        
+
         elements.modelSelect.appendChild(optgroup);
     });
 }
 
 function populateGPUSelect() {
     elements.gpuSelect.innerHTML = '';
-    
+
     // Group GPUs by vendor
     const vendors = {};
     gpusData.forEach(gpu => {
@@ -206,22 +295,22 @@ function populateGPUSelect() {
         }
         vendors[gpu.vendor].push(gpu);
     });
-    
+
     // Create optgroups
     Object.keys(vendors).sort().forEach(vendor => {
         const optgroup = document.createElement('optgroup');
         optgroup.label = vendor;
-        
+
         vendors[vendor].forEach(gpu => {
             const option = document.createElement('option');
             option.value = gpu.id;
             option.textContent = `${gpu.name} (${gpu.vram_gb}GB)`;
             optgroup.appendChild(option);
         });
-        
+
         elements.gpuSelect.appendChild(optgroup);
     });
-    
+
     // Select a sensible default (RTX 4090 if available)
     const defaultGpu = gpusData.find(g => g.id === 'rtx-4090-24gb');
     if (defaultGpu) {
@@ -254,10 +343,10 @@ function updateResults(result) {
     const percent = Math.min(result.vram_utilization_percent, 100);
     const circumference = 2 * Math.PI * 85;
     const offset = circumference - (percent / 100) * circumference;
-    
+
     elements.gaugeFill.style.strokeDashoffset = offset;
     elements.gaugePercent.textContent = `${percent.toFixed(1)}%`;
-    
+
     // Update gauge color based on utilization
     elements.gaugeFill.classList.remove('warning', 'error');
     if (percent > 100 || !result.fits_in_memory) {
@@ -265,7 +354,7 @@ function updateResults(result) {
     } else if (percent > 85) {
         elements.gaugeFill.classList.add('warning');
     }
-    
+
     // Update status badge
     if (!result.fits_in_memory) {
         elements.statusBadge.textContent = 'INSUFFICIENT';
@@ -277,36 +366,36 @@ function updateResults(result) {
         elements.statusBadge.textContent = 'SUFFICIENT';
         elements.statusBadge.className = 'status-badge sufficient';
     }
-    
+
     // Update total VRAM display
     elements.totalVram.textContent = formatGB(result.memory.total_gb);
     elements.vramOfTotal.textContent = `of ${result.gpu_vram_gb} GB VRAM`;
-    
+
     // Update per-user breakdown
     elements.sharedMemory.textContent = `${formatGB(result.shared_memory_gb)} shared`;
     elements.perUserMemory.textContent = `${formatGB(result.per_user_memory_gb)} per user`;
-    
-    const users = parseInt(elements.concurrentUsers.value);
+
+    const users = getConcurrentUsers();
     elements.concurrentHint.textContent = `Total for ${users} concurrent user${users > 1 ? 's' : ''}`;
-    
+
     // Update model info
     elements.modelInfoName.textContent = result.model_name;
     elements.infoWeights.textContent = elements.quantizationSelect.value.toUpperCase();
     elements.infoKvCache.textContent = elements.kvCacheSelect.value.toUpperCase();
-    
+
     // Get attention type from model data
     const model = modelsData.find(m => m.id === elements.modelSelect.value);
     if (model) {
         elements.infoAttention.textContent = model.attention_type.toUpperCase();
     }
-    
+
     // Update mode info
-    const batch = elements.batchSize.value;
+    const batch = getBatchSize();
     elements.modeInfo.textContent = `Mode: Inference | Batch: ${batch} | Users: ${users}`;
-    
+
     // Update max users
     elements.maxUsers.textContent = result.max_concurrent_users;
-    
+
     // Update allocation chart
     updateAllocationChart(result.memory);
 }
@@ -314,31 +403,34 @@ function updateResults(result) {
 function updateAllocationChart(memory) {
     const total = memory.total_gb;
     if (total === 0) return;
-    
+
     const weightsPct = (memory.weights_gb / total) * 100;
     const kvCachePct = (memory.kv_cache_gb / total) * 100;
     const activationsPct = (memory.activations_gb / total) * 100;
     const overheadPct = (memory.overhead_gb / total) * 100;
-    
+
     // Update bar segments
     elements.allocWeights.style.width = `${weightsPct}%`;
     elements.allocKvCache.style.width = `${kvCachePct}%`;
     elements.allocActivations.style.width = `${activationsPct}%`;
     elements.allocOverhead.style.width = `${overheadPct}%`;
-    
+
     // Update legend values
     elements.legendWeights.textContent = formatGB(memory.weights_gb);
     elements.legendWeightsPct.textContent = `${weightsPct.toFixed(1)}%`;
-    
+
     elements.legendKvCache.textContent = formatGB(memory.kv_cache_gb);
     elements.legendKvCachePct.textContent = `${kvCachePct.toFixed(1)}%`;
-    
+
     elements.legendActivations.textContent = formatGB(memory.activations_gb);
     elements.legendActivationsPct.textContent = `${activationsPct.toFixed(1)}%`;
-    
+
     elements.legendOverhead.textContent = formatGB(memory.overhead_gb);
     elements.legendOverheadPct.textContent = `${overheadPct.toFixed(1)}%`;
 }
+
+// Debounced calculate
+const debouncedCalculate = debounce(() => calculateVRAM(), 300);
 
 // Event Handlers
 function setupEventListeners() {
@@ -346,7 +438,7 @@ function setupEventListeners() {
     elements.modelSelect.addEventListener('change', () => {
         calculateVRAM();
     });
-    
+
     // GPU selection
     elements.gpuSelect.addEventListener('change', () => {
         // Show/hide custom VRAM input
@@ -357,22 +449,30 @@ function setupEventListeners() {
         }
         calculateVRAM();
     });
-    
+
     // Custom VRAM
     elements.customVram.addEventListener('change', () => {
         calculateVRAM();
     });
-    
+
     // Quantization
     elements.quantizationSelect.addEventListener('change', () => {
         calculateVRAM();
     });
-    
+
     // KV Cache quantization
     elements.kvCacheSelect.addEventListener('change', () => {
         calculateVRAM();
     });
-    
+
+    // Slider toggle
+    if (elements.sliderToggle) {
+        elements.sliderToggle.addEventListener('change', () => {
+            toggleInputMode(elements.sliderToggle.checked);
+            calculateVRAM();
+        });
+    }
+
     // Number of GPUs buttons
     document.querySelectorAll('.num-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -381,46 +481,57 @@ function setupEventListeners() {
             const min = parseInt(target.min);
             const max = parseInt(target.max);
             let value = parseInt(target.value);
-            
+
             if (action === 'increase' && value < max) {
                 target.value = value + 1;
             } else if (action === 'decrease' && value > min) {
                 target.value = value - 1;
             }
-            
+
             calculateVRAM();
         });
     });
-    
+
     // Num GPUs direct input
     elements.numGpus.addEventListener('change', () => {
         calculateVRAM();
     });
-    
+
     // Batch size slider
     elements.batchSize.addEventListener('input', () => {
         updateSliderValue(elements.batchSize, elements.batchSizeValue);
+        updateSliderProgress(elements.batchSize);
     });
-    elements.batchSize.addEventListener('change', debounce(() => {
-        calculateVRAM();
-    }, 300));
-    
+    elements.batchSize.addEventListener('change', debouncedCalculate);
+
     // Sequence length slider
     elements.sequenceLength.addEventListener('input', () => {
         updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
+        updateSliderProgress(elements.sequenceLength);
     });
-    elements.sequenceLength.addEventListener('change', debounce(() => {
-        calculateVRAM();
-    }, 300));
-    
+    elements.sequenceLength.addEventListener('change', debouncedCalculate);
+
     // Concurrent users slider
     elements.concurrentUsers.addEventListener('input', () => {
         updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
+        updateSliderProgress(elements.concurrentUsers);
     });
-    elements.concurrentUsers.addEventListener('change', debounce(() => {
-        calculateVRAM();
-    }, 300));
-    
+    elements.concurrentUsers.addEventListener('change', debouncedCalculate);
+
+    // Manual input fields
+    if (elements.batchSizeManual) {
+        elements.batchSizeManual.addEventListener('input', debouncedCalculate);
+        elements.batchSizeManual.addEventListener('change', () => calculateVRAM());
+    }
+    if (elements.sequenceLengthManual) {
+        elements.sequenceLengthManual.addEventListener('input', debouncedCalculate);
+        elements.sequenceLengthManual.addEventListener('change', () => calculateVRAM());
+    }
+    if (elements.concurrentUsersManual) {
+        elements.concurrentUsersManual.addEventListener('input', debouncedCalculate);
+        elements.concurrentUsersManual.addEventListener('change', () => calculateVRAM());
+    }
+
     // Mode toggle buttons
     document.querySelectorAll('.mode-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -434,21 +545,25 @@ function setupEventListeners() {
 // Initialize
 async function init() {
     setupEventListeners();
-    
-    // Initialize slider values
+
+    // Initialize slider values and progress
     updateSliderValue(elements.batchSize, elements.batchSizeValue);
     updateSliderValue(elements.sequenceLength, elements.sequenceLengthValue, formatSequenceLength);
     updateSliderValue(elements.concurrentUsers, elements.concurrentUsersValue);
-    
+
+    updateSliderProgress(elements.batchSize);
+    updateSliderProgress(elements.sequenceLength);
+    updateSliderProgress(elements.concurrentUsers);
+
     // Fetch data
     await Promise.all([fetchModels(), fetchGPUs()]);
-    
+
     // Select first model if available
     if (modelsData.length > 0) {
         // Default to a popular model like Llama 3.1 8B
         const defaultModel = modelsData.find(m => m.id === 'llama-3.1-8b') || modelsData[0];
         elements.modelSelect.value = defaultModel.id;
-        
+
         // Trigger initial calculation
         calculateVRAM();
     }
