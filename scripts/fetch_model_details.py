@@ -654,6 +654,8 @@ def row_to_model_json(row: Row) -> Optional[Dict[str, Any]]:
     model_id = model_name.lower().replace("_", "-").replace(" ", "-")
     
     is_moe = row.num_local_experts or row.n_routed_experts
+    if "llama-4" in row.repo_id.lower():
+        print(f"DEBUG: {row.repo_id} | is_moe={is_moe} | experts={row.num_local_experts}/{row.n_routed_experts} | weights={row.weight_total_bytes}")
     
     # Try to get explicit parameter count from config if we extracted it (need to add to Row first)
     # Actually, Row doesn't have it. I need to add it value to Row in extract_one or just re-estimate.
@@ -693,6 +695,9 @@ def row_to_model_json(row: Row) -> Optional[Dict[str, Any]]:
             
         # Total approx
         params = (L * (attn_params_per_layer + ffn_params_per_layer)) + (vocab * h)
+        
+    if "llama-4" in row.repo_id.lower():
+        print(f"DEBUG: {row.repo_id} | Final Params={params}")
     
     # Get provider from repo_id
     provider = parts[0] if len(parts) > 1 else "Unknown"
@@ -750,13 +755,24 @@ def main() -> None:
     api = HfApi(token=HF_TOKEN)
 
     rows: List[Row] = []
-    for rid in REPO_IDS:
+    
+    # Critical models only for quick update
+    critical_ids = [
+        "meta-llama/Llama-4-Scout-17B-16E",
+        "meta-llama/Llama-4-Maverick-17B-128E",
+        "Qwen/Qwen3-30B-A3B",
+        "deepseek-ai/DeepSeek-V3",
+        "microsoft/Phi-3-mini-4k-instruct",
+        "google/gemma-2-9b"
+    ]
+    
+    for rid in critical_ids:
         print(f"Processing: {rid}")
         rows.append(extract_one(api, rid))
 
-    out_csv = "model_details.csv"
-    out_jsonl = "model_details.jsonl"
-    out_models_json = "models_hf.json"
+    out_csv = "scripts/model_details.csv"
+    out_jsonl = "scripts/model_details.jsonl"
+    out_models_json = "scripts/models_hf.json"
 
     # CSV
     dict_rows = [asdict(r) for r in rows]

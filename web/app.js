@@ -563,23 +563,7 @@ const debouncedCalculate = debounce(() => calculateVRAM(), 300);
 function setupEventListeners() {
     // Model selection
     elements.modelSelect.addEventListener('change', () => {
-        // Update Sequence Length Max based on model
-        const modelId = elements.modelSelect.value;
-        const model = modelsData.find(m => m.id === modelId);
-        if (model && model.architecture && model.architecture.max_position_embeddings) {
-            const maxSeq = model.architecture.max_position_embeddings;
-            // Update config
-            sliderConfigs['sequence-length'].max = maxSeq;
-
-            // Update manual input max
-            if (elements.sequenceLengthManual) {
-                elements.sequenceLengthManual.max = maxSeq;
-            }
-
-            // Refresh slider
-            updateSliderScale('sequence-length');
-        }
-
+        updateModelConfig();
         calculateVRAM();
     });
 
@@ -728,8 +712,29 @@ async function init() {
         const defaultModel = modelsData.find(m => m.id === 'llama-3.1-8b') || modelsData[0];
         elements.modelSelect.value = defaultModel.id;
 
+        updateModelConfig();
+
         // Trigger initial calculation
         calculateVRAM();
+    }
+}
+
+function updateModelConfig() {
+    const modelId = elements.modelSelect.value;
+    const model = modelsData.find(m => m.id === modelId);
+    if (model && model.max_position_embeddings) {
+        const maxSeq = model.max_position_embeddings;
+
+        // Update config
+        sliderConfigs['sequence-length'].max = maxSeq;
+
+        // Update manual input max
+        if (elements.sequenceLengthManual) {
+            elements.sequenceLengthManual.max = maxSeq;
+        }
+
+        // Refresh slider
+        updateSliderScale('sequence-length');
     }
 }
 
